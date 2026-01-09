@@ -1,13 +1,30 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import Navbar from "@/components/Navbar";
+import HeroSection from "@/components/HeroSection";
+import LayerStack from "@/components/LayerStack";
+import RCISection from "@/components/RCISection";
+import StakeholderSection from "@/components/StakeholderSection";
+import RoadmapSection from "@/components/RoadmapSection";
+import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <main className="min-h-screen bg-background">
+      <Navbar />
+      <HeroSection />
+      <div id="architecture">
+        <LayerStack />
       </div>
-    </div>
+      <div id="rci">
+        <RCISection />
+      </div>
+      <div id="stewards">
+        <StakeholderSection />
+      </div>
+      <div id="roadmap">
+        <RoadmapSection />
+      </div>
+      <Footer />
+    </main>
   );
 };
 
