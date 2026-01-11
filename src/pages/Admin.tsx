@@ -49,9 +49,12 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  Download,
+  Wifi,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import { exportRCIRegionsToCSV, exportUserRolesToCSV } from "@/utils/exportData";
 
 interface RCIRegion {
   id: string;
@@ -367,6 +370,10 @@ const Admin = () => {
                     RCI Regions ({regions.length})
                   </h2>
                   <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => exportRCIRegionsToCSV(regions)}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Export CSV
+                    </Button>
                     <Button variant="outline" size="sm" onClick={fetchData}>
                       <RefreshCw className="w-4 h-4 mr-2" />
                       Refresh

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, TrendingDown, Minus, Globe, Leaf, Waves, Heart, Recycle, X } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Globe, Leaf, Waves, Heart, Recycle, X, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface RCIRegion {
@@ -68,6 +68,7 @@ const RCIWorldMap = () => {
   const [hoveredRegion, setHoveredRegion] = useState<RCIRegion | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<RCIRegion | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isRealtime, setIsRealtime] = useState(false);
 
   useEffect(() => {
     const fetchRegions = async () => {
@@ -83,7 +84,52 @@ const RCIWorldMap = () => {
     };
 
     fetchRegions();
-  }, []);
+
+    // Set up realtime subscription
+    const channel = supabase
+      .channel("rci_regions_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "rci_regions",
+        },
+        (payload) => {
+          setIsRealtime(true);
+          
+          if (payload.eventType === "INSERT") {
+            const newRegion = payload.new as RCIRegion;
+            if (Object.keys(regionPaths).includes(newRegion.region_code)) {
+              setRegions((prev) => [...prev, newRegion]);
+            }
+          } else if (payload.eventType === "UPDATE") {
+            const updatedRegion = payload.new as RCIRegion;
+            setRegions((prev) =>
+              prev.map((r) => (r.id === updatedRegion.id ? updatedRegion : r))
+            );
+            // Update selected region if it's the one being updated
+            if (selectedRegion?.id === updatedRegion.id) {
+              setSelectedRegion(updatedRegion);
+            }
+          } else if (payload.eventType === "DELETE") {
+            const deletedRegion = payload.old as RCIRegion;
+            setRegions((prev) => prev.filter((r) => r.id !== deletedRegion.id));
+            if (selectedRegion?.id === deletedRegion.id) {
+              setSelectedRegion(null);
+            }
+          }
+          
+          // Flash the realtime indicator
+          setTimeout(() => setIsRealtime(false), 2000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedRegion?.id]);
 
   const getRegionData = (code: string) => regions.find((r) => r.region_code === code);
 
@@ -102,6 +148,19 @@ const RCIWorldMap = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-6">
             <Globe className="w-4 h-4 text-primary" />
             <span className="text-sm font-medium">Global RCI Intelligence</span>
+            <AnimatePresence>
+              {isRealtime && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/20"
+                >
+                  <Wifi className="w-3 h-3 text-primary animate-pulse" />
+                  <span className="text-xs text-primary">Live</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             Regenerative Capacity
@@ -337,8 +396,8 @@ const RCIWorldMap = () => {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-border">
-                  <Button className="w-full" variant="default">
-                    View Full Analytics
+                  <Button className="w-full" variant="default" asChild>
+                    <a href="/dashboard">View Full Analytics</a>
                   </Button>
                 </div>
               </motion.div>
