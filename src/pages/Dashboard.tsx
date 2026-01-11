@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { exportRCIRegionsToCSV } from "@/utils/exportData";
 import {
   Globe,
   TrendingUp,
@@ -21,6 +22,8 @@ import {
   User,
   Home,
   Shield,
+  Download,
+  Wifi,
 } from "lucide-react";
 import {
   LineChart,
@@ -49,6 +52,7 @@ interface RCIRegion {
   ocean_capacity: number | null;
   human_capacity: number | null;
   circular_capacity: number | null;
+  last_updated?: string | null;
 }
 
 const mockTimeSeriesData = [
@@ -78,6 +82,7 @@ const Dashboard = () => {
   const [regions, setRegions] = useState<RCIRegion[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<RCIRegion | null>(null);
   const [view, setView] = useState<"charts" | "table">("charts");
+  const [isRealtime, setIsRealtime] = useState(false);
 
   useEffect(() => {
     const fetchRegions = async () => {
@@ -96,8 +101,44 @@ const Dashboard = () => {
 
     if (user) {
       fetchRegions();
+
+      // Set up realtime subscription
+      const channel = supabase
+        .channel("dashboard_rci_changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "rci_regions",
+          },
+          (payload) => {
+            setIsRealtime(true);
+            
+            if (payload.eventType === "INSERT") {
+              setRegions((prev) => [...prev, payload.new as RCIRegion].sort((a, b) => b.rci_score - a.rci_score));
+            } else if (payload.eventType === "UPDATE") {
+              const updated = payload.new as RCIRegion;
+              setRegions((prev) =>
+                prev.map((r) => (r.id === updated.id ? updated : r)).sort((a, b) => b.rci_score - a.rci_score)
+              );
+              if (selectedRegion?.id === updated.id) {
+                setSelectedRegion(updated);
+              }
+            } else if (payload.eventType === "DELETE") {
+              setRegions((prev) => prev.filter((r) => r.id !== (payload.old as RCIRegion).id));
+            }
+            
+            setTimeout(() => setIsRealtime(false), 2000);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
-  }, [user]);
+  }, [user, selectedRegion?.id]);
 
   if (loading) {
     return (
@@ -117,6 +158,7 @@ const Dashboard = () => {
 
   const improvingCount = regions.filter((r) => r.rci_trend === "improving").length;
   const decliningCount = regions.filter((r) => r.rci_trend === "declining").length;
+
 
   const pieData = selectedRegion
     ? [
@@ -145,6 +187,19 @@ const Dashboard = () => {
               <div className="hidden md:flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
                 <span className="capitalize">{roles[0] || "User"}</span> Dashboard
               </div>
+              <AnimatePresence>
+                {isRealtime && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/20"
+                  >
+                    <Wifi className="w-3 h-3 text-primary animate-pulse" />
+                    <span className="text-xs text-primary">Live Update</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="flex items-center gap-3">
@@ -232,7 +287,7 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">Focus Region:</span>
             <select
               value={selectedRegion?.id || ""}
@@ -248,6 +303,17 @@ const Dashboard = () => {
                 </option>
               ))}
             </select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportRCIRegionsToCSV(regions.map(r => ({
+                ...r,
+                last_updated: r.last_updated ?? null,
+              })))}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Export CSV
+            </Button>
           </div>
         </div>
 
