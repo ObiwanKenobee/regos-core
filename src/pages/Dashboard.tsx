@@ -20,6 +20,7 @@ import {
   LogOut,
   User,
   Home,
+  Shield,
 } from "lucide-react";
 import {
   LineChart,
@@ -153,6 +154,14 @@ const Dashboard = () => {
                   Home
                 </a>
               </Button>
+              {roles.includes("admin") && (
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/admin">
+                    <Shield className="w-4 h-4 mr-2" />
+                    Admin
+                  </a>
+                </Button>
+              )}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
                 <User className="w-4 h-4 text-muted-foreground" />
                 <span className="text-sm hidden md:inline">{user.email}</span>
