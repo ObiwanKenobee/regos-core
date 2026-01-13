@@ -14,6 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      data_sources: {
+        Row: {
+          api_key_name: string | null
+          created_at: string
+          data_type: string | null
+          endpoint_url: string | null
+          id: string
+          last_sync: string | null
+          metadata: Json | null
+          name: string
+          region_id: string | null
+          source_type: string
+          status: string
+          sync_interval_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          api_key_name?: string | null
+          created_at?: string
+          data_type?: string | null
+          endpoint_url?: string | null
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          name: string
+          region_id?: string | null
+          source_type: string
+          status?: string
+          sync_interval_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          api_key_name?: string | null
+          created_at?: string
+          data_type?: string | null
+          endpoint_url?: string | null
+          id?: string
+          last_sync?: string | null
+          metadata?: Json | null
+          name?: string
+          region_id?: string | null
+          source_type?: string
+          status?: string
+          sync_interval_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "data_sources_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          region_id: string | null
+          severity: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          region_id?: string | null
+          severity?: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          region_id?: string | null
+          severity?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -46,6 +149,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      rci_history: {
+        Row: {
+          circular_capacity: number | null
+          human_capacity: number | null
+          id: string
+          land_capacity: number | null
+          ocean_capacity: number | null
+          rci_score: number
+          recorded_at: string
+          region_id: string
+        }
+        Insert: {
+          circular_capacity?: number | null
+          human_capacity?: number | null
+          id?: string
+          land_capacity?: number | null
+          ocean_capacity?: number | null
+          rci_score: number
+          recorded_at?: string
+          region_id: string
+        }
+        Update: {
+          circular_capacity?: number | null
+          human_capacity?: number | null
+          id?: string
+          land_capacity?: number | null
+          ocean_capacity?: number | null
+          rci_score?: number
+          recorded_at?: string
+          region_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rci_history_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       rci_regions: {
         Row: {
@@ -144,6 +288,91 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      verification_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          credit_amount: number
+          credit_type: string
+          description: string | null
+          evidence_urls: string[] | null
+          id: string
+          region_id: string
+          required_signatures: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          credit_amount: number
+          credit_type: string
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          region_id: string
+          required_signatures?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          credit_amount?: number
+          credit_type?: string
+          description?: string | null
+          evidence_urls?: string[] | null
+          id?: string
+          region_id?: string
+          required_signatures?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_requests_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_signatures: {
+        Row: {
+          comment: string | null
+          id: string
+          request_id: string
+          signature_type: string
+          signed_at: string
+          signer_id: string
+        }
+        Insert: {
+          comment?: string | null
+          id?: string
+          request_id: string
+          signature_type: string
+          signed_at?: string
+          signer_id: string
+        }
+        Update: {
+          comment?: string | null
+          id?: string
+          request_id?: string
+          signature_type?: string
+          signed_at?: string
+          signer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_signatures_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
