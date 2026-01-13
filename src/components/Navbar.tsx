@@ -8,6 +8,7 @@ const navLinks = [
   { label: "RCI", href: "/#rci" },
   { label: "World Map", href: "/#world-map" },
   { label: "Simulator", href: "/#simulator" },
+  { label: "Token Flow", href: "/#token-flow" },
   { label: "Methodology", href: "/#methodology" },
   { label: "Stewards", href: "/#stewards" },
   { label: "Roadmap", href: "/#roadmap" },
