@@ -7,6 +7,7 @@ const navLinks = [
   { label: "Architecture", href: "/#architecture" },
   { label: "RCI", href: "/#rci" },
   { label: "World Map", href: "/#world-map" },
+  { label: "Simulator", href: "/#simulator" },
   { label: "Methodology", href: "/#methodology" },
   { label: "Stewards", href: "/#stewards" },
   { label: "Roadmap", href: "/#roadmap" },
