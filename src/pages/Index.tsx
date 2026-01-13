@@ -9,6 +9,7 @@ import RCIMethodology from "@/components/RCIMethodology";
 import PolicySimulator from "@/components/PolicySimulator";
 import StakeholderSection from "@/components/StakeholderSection";
 import RoadmapSection from "@/components/RoadmapSection";
+import ImpactTokenFlow from "@/components/ImpactTokenFlow";
 import Footer from "@/components/Footer";
 import { ScrollAnimationWrapper } from "@/components/ScrollAnimationWrapper";
 
@@ -54,6 +55,10 @@ const Index = () => {
 
         <ScrollAnimationWrapper variant="fadeUp">
           <div id="simulator"><PolicySimulator /></div>
+        </ScrollAnimationWrapper>
+
+        <ScrollAnimationWrapper variant="scaleUp">
+          <div id="token-flow"><ImpactTokenFlow /></div>
         </ScrollAnimationWrapper>
 
         <ScrollAnimationWrapper variant="slideLeft">
