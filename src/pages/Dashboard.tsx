@@ -24,6 +24,7 @@ import {
   Shield,
   Download,
   Wifi,
+  Crown,
 } from "lucide-react";
 import {
   LineChart,
@@ -209,6 +210,14 @@ const Dashboard = () => {
                   Home
                 </a>
               </Button>
+              {(roles.includes("sovereign") || roles.includes("admin")) && (
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/sovereign">
+                    <Crown className="w-4 h-4 mr-2" />
+                    Sovereign
+                  </a>
+                </Button>
+              )}
               {roles.includes("admin") && (
                 <Button variant="outline" size="sm" asChild>
                   <a href="/admin">
