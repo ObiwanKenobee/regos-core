@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import NotificationCenter from "@/components/NotificationCenter";
 
 const navLinks = [
   { label: "Architecture", href: "/#architecture" },
@@ -63,6 +64,7 @@ const Navbar = () => {
 
           {/* CTA */}
           <div className="hidden md:flex items-center gap-3">
+            <NotificationCenter />
             <Button variant="ghost" size="sm" asChild>
               <a href="/#methodology">Documentation</a>
             </Button>

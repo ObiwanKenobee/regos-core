@@ -51,10 +51,16 @@ import {
   Minus,
   Download,
   Wifi,
+  Database,
+  CheckSquare,
+  Clock,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { exportRCIRegionsToCSV, exportUserRolesToCSV } from "@/utils/exportData";
+import DataSourceManager from "@/components/admin/DataSourceManager";
+import VerificationWorkflow from "@/components/VerificationWorkflow";
+import RCITimeline from "@/components/RCITimeline";
 
 interface RCIRegion {
   id: string;
@@ -346,7 +352,7 @@ const Admin = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="regions" className="space-y-6">
-            <TabsList className="glass-strong">
+            <TabsList className="glass-strong flex-wrap h-auto gap-1 p-1">
               <TabsTrigger value="regions" className="gap-2">
                 <Globe className="w-4 h-4" />
                 RCI Regions
@@ -354,6 +360,18 @@ const Admin = () => {
               <TabsTrigger value="users" className="gap-2">
                 <Users className="w-4 h-4" />
                 User Roles
+              </TabsTrigger>
+              <TabsTrigger value="datasources" className="gap-2">
+                <Database className="w-4 h-4" />
+                Data Sources
+              </TabsTrigger>
+              <TabsTrigger value="verification" className="gap-2">
+                <CheckSquare className="w-4 h-4" />
+                Verification
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="gap-2">
+                <Clock className="w-4 h-4" />
+                RCI Timeline
               </TabsTrigger>
             </TabsList>
 
@@ -796,6 +814,21 @@ const Admin = () => {
                   </Table>
                 </div>
               </motion.div>
+            </TabsContent>
+
+            {/* Data Sources Tab */}
+            <TabsContent value="datasources">
+              <DataSourceManager />
+            </TabsContent>
+
+            {/* Verification Workflow Tab */}
+            <TabsContent value="verification">
+              <VerificationWorkflow />
+            </TabsContent>
+
+            {/* RCI Timeline Tab */}
+            <TabsContent value="timeline">
+              <RCITimeline />
             </TabsContent>
           </Tabs>
         </div>
