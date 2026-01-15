@@ -135,13 +135,39 @@ const SovereignDashboard = () => {
 
   const fetchRegions = async () => {
     try {
-      const { data, error } = await supabase
-        .from("rci_regions")
-        .select("*")
-        .order("rci_score", { ascending: false });
+      // If admin, show all regions; otherwise show only assigned regions
+      if (roles.includes("admin")) {
+        const { data, error } = await supabase
+          .from("rci_regions")
+          .select("*")
+          .order("rci_score", { ascending: false });
 
-      if (error) throw error;
-      setRegions(data || []);
+        if (error) throw error;
+        setRegions(data || []);
+      } else {
+        // Fetch assigned regions for sovereign users
+        const { data: assignments, error: assignError } = await supabase
+          .from("user_region_assignments")
+          .select("region_id")
+          .eq("user_id", user?.id);
+
+        if (assignError) throw assignError;
+
+        const regionIds = assignments?.map((a) => a.region_id) || [];
+
+        if (regionIds.length > 0) {
+          const { data, error } = await supabase
+            .from("rci_regions")
+            .select("*")
+            .in("id", regionIds)
+            .order("rci_score", { ascending: false });
+
+          if (error) throw error;
+          setRegions(data || []);
+        } else {
+          setRegions([]);
+        }
+      }
     } catch (error: any) {
       toast({
         title: "Error fetching regions",

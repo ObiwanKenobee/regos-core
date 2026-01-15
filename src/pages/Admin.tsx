@@ -59,6 +59,7 @@ import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { exportRCIRegionsToCSV, exportUserRolesToCSV } from "@/utils/exportData";
 import DataSourceManager from "@/components/admin/DataSourceManager";
+import RegionAssignmentManager from "@/components/admin/RegionAssignmentManager";
 import VerificationWorkflow from "@/components/VerificationWorkflow";
 import RCITimeline from "@/components/RCITimeline";
 
@@ -360,6 +361,10 @@ const Admin = () => {
               <TabsTrigger value="users" className="gap-2">
                 <Users className="w-4 h-4" />
                 User Roles
+              </TabsTrigger>
+              <TabsTrigger value="assignments" className="gap-2">
+                <Wifi className="w-4 h-4" />
+                Region Assignments
               </TabsTrigger>
               <TabsTrigger value="datasources" className="gap-2">
                 <Database className="w-4 h-4" />
@@ -814,6 +819,11 @@ const Admin = () => {
                   </Table>
                 </div>
               </motion.div>
+            </TabsContent>
+
+            {/* Region Assignments Tab */}
+            <TabsContent value="assignments">
+              <RegionAssignmentManager />
             </TabsContent>
 
             {/* Data Sources Tab */}

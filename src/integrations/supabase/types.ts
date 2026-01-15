@@ -17,7 +17,9 @@ export type Database = {
       data_sources: {
         Row: {
           api_key_name: string | null
+          auto_sync_enabled: boolean | null
           created_at: string
+          cron_schedule: string | null
           data_type: string | null
           endpoint_url: string | null
           id: string
@@ -32,7 +34,9 @@ export type Database = {
         }
         Insert: {
           api_key_name?: string | null
+          auto_sync_enabled?: boolean | null
           created_at?: string
+          cron_schedule?: string | null
           data_type?: string | null
           endpoint_url?: string | null
           id?: string
@@ -47,7 +51,9 @@ export type Database = {
         }
         Update: {
           api_key_name?: string | null
+          auto_sync_enabled?: boolean | null
           created_at?: string
+          cron_schedule?: string | null
           data_type?: string | null
           endpoint_url?: string | null
           id?: string
@@ -66,6 +72,57 @@ export type Database = {
             columns: ["region_id"]
             isOneToOne: false
             referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      impact_tokens: {
+        Row: {
+          amount: number
+          id: string
+          metadata: Json | null
+          minted_at: string
+          minted_by: string
+          region_id: string
+          token_type: string
+          transaction_hash: string | null
+          verification_request_id: string
+        }
+        Insert: {
+          amount: number
+          id?: string
+          metadata?: Json | null
+          minted_at?: string
+          minted_by: string
+          region_id: string
+          token_type: string
+          transaction_hash?: string | null
+          verification_request_id: string
+        }
+        Update: {
+          amount?: number
+          id?: string
+          metadata?: Json | null
+          minted_at?: string
+          minted_by?: string
+          region_id?: string
+          token_type?: string
+          transaction_hash?: string | null
+          verification_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impact_tokens_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impact_tokens_verification_request_id_fkey"
+            columns: ["verification_request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -261,6 +318,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sovereign_analytics_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_region_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          id: string
+          region_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          region_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          id?: string
+          region_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_region_assignments_region_id_fkey"
             columns: ["region_id"]
             isOneToOne: false
             referencedRelation: "rci_regions"
