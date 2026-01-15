@@ -1,1 +1,7 @@
 project_id = "acuopztviyptrxyfzkvh"
+
+[functions.sync-data-sources]
+verify_jwt = false
+
+[functions.rci-data-ingestion]
+verify_jwt = false

@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import CreditMintingWorkflow from "@/components/CreditMintingWorkflow";
 
 interface VerificationRequest {
   id: string;
@@ -93,6 +94,7 @@ const VerificationWorkflow = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [signingRequest, setSigningRequest] = useState<string | null>(null);
   const [signatureComment, setSignatureComment] = useState("");
+  const [mintingRequest, setMintingRequest] = useState<VerificationRequest | null>(null);
   const [newRequest, setNewRequest] = useState({
     region_id: "",
     credit_amount: 0,
@@ -586,12 +588,44 @@ const VerificationWorkflow = () => {
                       </span>
                     </div>
                   )}
+
+                  {/* Mint tokens action for approved requests */}
+                  {request.status === "approved" && canSign && (
+                    <div className="mt-4 pt-4 border-t border-border/30">
+                      <Button
+                        size="sm"
+                        onClick={() => setMintingRequest(request)}
+                        className="gap-2"
+                      >
+                        <Coins className="w-4 h-4" />
+                        Mint Impact Tokens
+                      </Button>
+                    </div>
+                  )}
                 </motion.div>
               );
             })
           )}
         </AnimatePresence>
       </div>
+
+      {/* Credit Minting Dialog */}
+      <CreditMintingWorkflow
+        request={mintingRequest ? {
+          id: mintingRequest.id,
+          region_id: mintingRequest.region_id,
+          credit_amount: mintingRequest.credit_amount,
+          credit_type: mintingRequest.credit_type,
+          description: mintingRequest.description,
+          region: mintingRequest.region,
+        } : null}
+        isOpen={!!mintingRequest}
+        onClose={() => setMintingRequest(null)}
+        onMinted={() => {
+          setMintingRequest(null);
+          fetchData();
+        }}
+      />
     </div>
   );
 };
