@@ -8,11 +8,9 @@ const navLinks = [
   { label: "Architecture", href: "/#architecture" },
   { label: "RCI", href: "/#rci" },
   { label: "World Map", href: "/#world-map" },
-  { label: "Simulator", href: "/#simulator" },
-  { label: "Token Flow", href: "/#token-flow" },
+  { label: "Leaderboard", href: "/leaderboard" },
+  { label: "Treasury", href: "/treasury" },
   { label: "Methodology", href: "/#methodology" },
-  { label: "Stewards", href: "/#stewards" },
-  { label: "Roadmap", href: "/#roadmap" },
   { label: "Pricing", href: "/pricing" },
 ];
 
