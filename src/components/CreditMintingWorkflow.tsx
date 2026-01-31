@@ -104,6 +104,24 @@ const CreditMintingWorkflow = ({ request, isOpen, onClose, onMinted }: CreditMin
 
       if (error) throw error;
 
+      // Send email notification (fire and forget)
+      try {
+        await supabase.functions.invoke("send-notification-email", {
+          body: {
+            type: "token_minted",
+            recipient_email: user.email,
+            data: {
+              region_name: request.region?.region_name,
+              token_type: request.credit_type,
+              token_amount: request.credit_amount,
+              transaction_hash: txHash,
+            },
+          },
+        });
+      } catch (emailError) {
+        console.log("Email notification failed (non-critical):", emailError);
+      }
+
       setIsMinted(true);
 
       toast({
