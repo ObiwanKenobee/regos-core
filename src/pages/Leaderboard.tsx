@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -25,6 +26,7 @@ import {
   Activity,
   Repeat,
   Medal,
+  Scale,
 } from "lucide-react";
 import {
   BarChart,
@@ -37,6 +39,9 @@ import {
   AreaChart,
   Area,
 } from "recharts";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
+import { RegionComparison } from "@/components/RegionComparison";
 
 const capacityConfig = {
   land: { icon: TreeDeciduous, color: "#22c55e", label: "Land" },
@@ -77,6 +82,20 @@ const Leaderboard = () => {
   const globalAverage = regions.length > 0
     ? regions.reduce((sum, r) => sum + Number(r.rci_score), 0) / regions.length
     : 0;
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: paginatedRegions,
+    goToPage,
+    nextPage,
+    prevPage,
+    setItemsPerPage,
+    itemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({ data: regions, itemsPerPage: 15 });
 
   const trendData = useMemo(() => {
     const monthlyAverages: Record<string, { month: string; average: number; count: number }> = {};
@@ -301,106 +320,141 @@ const Leaderboard = () => {
             </Card>
           </div>
 
-          {/* Capacity Breakdown Chart */}
-          <Card className="glass-strong mb-8">
-            <CardHeader>
-              <CardTitle>Top 10 Regions - Capacity Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={topRegions} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                    <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={[0, 100]} />
-                    <YAxis
-                      type="category"
-                      dataKey="region_name"
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                      width={120}
-                    />
-                    <Tooltip
-                      formatter={(value: number) => `${value?.toFixed(1) || 0}%`}
-                      contentStyle={{
-                        backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: "8px",
-                      }}
-                    />
-                    <Bar dataKey="land_capacity" fill="#22c55e" name="Land" stackId="a" />
-                    <Bar dataKey="ocean_capacity" fill="#3b82f6" name="Ocean" stackId="a" />
-                    <Bar dataKey="human_capacity" fill="#f43f5e" name="Human" stackId="a" />
-                    <Bar dataKey="circular_capacity" fill="#a855f7" name="Circular" stackId="a" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-              <div className="flex justify-center gap-6 mt-4">
-                {Object.entries(capacityConfig).map(([key, config]) => {
-                  const Icon = config.icon;
-                  return (
-                    <div key={key} className="flex items-center gap-2">
-                      <Icon className="w-4 h-4" style={{ color: config.color }} />
-                      <span className="text-sm text-muted-foreground">{config.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="rankings" className="space-y-6">
+            <TabsList>
+              <TabsTrigger value="rankings">Rankings</TabsTrigger>
+              <TabsTrigger value="capacity">Capacity Breakdown</TabsTrigger>
+              <TabsTrigger value="compare" className="flex items-center gap-2">
+                <Scale className="w-4 h-4" />
+                Compare Regions
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Full Rankings Table */}
-          <Card className="glass-strong">
-            <CardHeader>
-              <CardTitle>Complete Rankings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">Rank</TableHead>
-                    <TableHead>Region</TableHead>
-                    <TableHead>RCI Score</TableHead>
-                    <TableHead>Land</TableHead>
-                    <TableHead>Ocean</TableHead>
-                    <TableHead>Human</TableHead>
-                    <TableHead>Circular</TableHead>
-                    <TableHead>Trend</TableHead>
-                    <TableHead>Last Updated</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {regions.map((region, index) => (
-                    <TableRow key={region.id}>
-                      <TableCell>
-                        <div className="flex items-center justify-center">
-                          {getRankIcon(index)}
+            <TabsContent value="rankings">
+              {/* Full Rankings Table */}
+              <Card className="glass-strong">
+                <CardHeader>
+                  <CardTitle>Complete Rankings</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-16">Rank</TableHead>
+                        <TableHead>Region</TableHead>
+                        <TableHead>RCI Score</TableHead>
+                        <TableHead>Land</TableHead>
+                        <TableHead>Ocean</TableHead>
+                        <TableHead>Human</TableHead>
+                        <TableHead>Circular</TableHead>
+                        <TableHead>Trend</TableHead>
+                        <TableHead>Last Updated</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedRegions.map((region, index) => {
+                        const globalIndex = (currentPage - 1) * itemsPerPage + index;
+                        return (
+                          <TableRow key={region.id}>
+                            <TableCell>
+                              <div className="flex items-center justify-center">
+                                {getRankIcon(globalIndex)}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="font-medium text-foreground">{region.region_name}</div>
+                              <div className="text-xs text-muted-foreground">{region.region_code}</div>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`font-bold ${getScoreColor(region.rci_score)}`}>
+                                {region.rci_score.toFixed(1)}%
+                              </span>
+                            </TableCell>
+                            <TableCell>{region.land_capacity?.toFixed(1) || "-"}%</TableCell>
+                            <TableCell>{region.ocean_capacity?.toFixed(1) || "-"}%</TableCell>
+                            <TableCell>{region.human_capacity?.toFixed(1) || "-"}%</TableCell>
+                            <TableCell>{region.circular_capacity?.toFixed(1) || "-"}%</TableCell>
+                            <TableCell>{getTrendBadge(region.rci_trend)}</TableCell>
+                            <TableCell className="text-muted-foreground">
+                              {region.last_updated
+                                ? new Date(region.last_updated).toLocaleDateString()
+                                : "-"}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  
+                  <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                    onPrevPage={prevPage}
+                    onNextPage={nextPage}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="capacity">
+              {/* Capacity Breakdown Chart */}
+              <Card className="glass-strong">
+                <CardHeader>
+                  <CardTitle>Top 10 Regions - Capacity Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={topRegions} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} domain={[0, 100]} />
+                        <YAxis
+                          type="category"
+                          dataKey="region_name"
+                          stroke="hsl(var(--muted-foreground))"
+                          fontSize={12}
+                          width={120}
+                        />
+                        <Tooltip
+                          formatter={(value: number) => `${value?.toFixed(1) || 0}%`}
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                          }}
+                        />
+                        <Bar dataKey="land_capacity" fill="#22c55e" name="Land" stackId="a" />
+                        <Bar dataKey="ocean_capacity" fill="#3b82f6" name="Ocean" stackId="a" />
+                        <Bar dataKey="human_capacity" fill="#f43f5e" name="Human" stackId="a" />
+                        <Bar dataKey="circular_capacity" fill="#a855f7" name="Circular" stackId="a" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex justify-center gap-6 mt-4">
+                    {Object.entries(capacityConfig).map(([key, config]) => {
+                      const Icon = config.icon;
+                      return (
+                        <div key={key} className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" style={{ color: config.color }} />
+                          <span className="text-sm text-muted-foreground">{config.label}</span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium text-foreground">{region.region_name}</div>
-                        <div className="text-xs text-muted-foreground">{region.region_code}</div>
-                      </TableCell>
-                      <TableCell>
-                        <span className={`font-bold ${getScoreColor(region.rci_score)}`}>
-                          {region.rci_score.toFixed(1)}%
-                        </span>
-                      </TableCell>
-                      <TableCell>{region.land_capacity?.toFixed(1) || "-"}%</TableCell>
-                      <TableCell>{region.ocean_capacity?.toFixed(1) || "-"}%</TableCell>
-                      <TableCell>{region.human_capacity?.toFixed(1) || "-"}%</TableCell>
-                      <TableCell>{region.circular_capacity?.toFixed(1) || "-"}%</TableCell>
-                      <TableCell>{getTrendBadge(region.rci_trend)}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {region.last_updated
-                          ? new Date(region.last_updated).toLocaleDateString()
-                          : "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="compare">
+              <RegionComparison />
+            </TabsContent>
+          </Tabs>
         </motion.div>
       </main>
 
