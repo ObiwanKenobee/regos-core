@@ -16,12 +16,13 @@ import {
   Activity,
   Repeat,
   Download,
-  TrendingUp,
   Calendar,
   Globe,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { exportToCSV } from "@/utils/exportData";
+import { usePagination } from "@/hooks/usePagination";
+import { PaginationControls } from "@/components/PaginationControls";
 
 const tokenTypeConfig = {
   land: { icon: TreeDeciduous, color: "#22c55e", label: "Land" },
@@ -139,6 +140,20 @@ const Treasury = () => {
   }, [filteredTokens]);
 
   const totalMinted = filteredTokens.reduce((sum, t) => sum + Number(t.amount), 0);
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: paginatedTokens,
+    goToPage,
+    nextPage,
+    prevPage,
+    setItemsPerPage,
+    itemsPerPage,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({ data: filteredTokens, itemsPerPage: 15 });
 
   const handleExportByType = () => {
     exportToCSV(
@@ -403,7 +418,7 @@ const Treasury = () => {
             <TabsContent value="transactions">
               <Card className="glass-strong">
                 <CardHeader>
-                  <CardTitle className="text-lg">Recent Transactions</CardTitle>
+                  <CardTitle className="text-lg">All Transactions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Table>
@@ -417,7 +432,7 @@ const Treasury = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredTokens.slice(0, 20).map((token) => {
+                      {paginatedTokens.map((token) => {
                         const config = tokenTypeConfig[token.token_type as keyof typeof tokenTypeConfig];
                         const Icon = config?.icon || Coins;
                         return (
@@ -443,6 +458,19 @@ const Treasury = () => {
                       })}
                     </TableBody>
                   </Table>
+
+                  <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={goToPage}
+                    onPrevPage={prevPage}
+                    onNextPage={nextPage}
+                    startIndex={startIndex}
+                    endIndex={endIndex}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
