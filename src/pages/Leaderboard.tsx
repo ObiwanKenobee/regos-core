@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Table,
@@ -15,6 +16,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Trophy,
   TrendingUp,
@@ -27,6 +35,8 @@ import {
   Repeat,
   Medal,
   Scale,
+  Search,
+  Filter,
 } from "lucide-react";
 import {
   BarChart,
@@ -51,6 +61,9 @@ const capacityConfig = {
 };
 
 const Leaderboard = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [trendFilter, setTrendFilter] = useState<string>("all");
+
   const { data: regions = [], isLoading } = useQuery({
     queryKey: ["leaderboard-regions"],
     queryFn: async () => {
@@ -78,6 +91,18 @@ const Leaderboard = () => {
     },
   });
 
+  // Filter regions based on search and trend
+  const filteredRegions = useMemo(() => {
+    return regions.filter((region) => {
+      const matchesSearch =
+        region.region_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        region.region_code.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTrend =
+        trendFilter === "all" || region.rci_trend === trendFilter;
+      return matchesSearch && matchesTrend;
+    });
+  }, [regions, searchQuery, trendFilter]);
+
   const topRegions = regions.slice(0, 10);
   const globalAverage = regions.length > 0
     ? regions.reduce((sum, r) => sum + Number(r.rci_score), 0) / regions.length
@@ -95,7 +120,7 @@ const Leaderboard = () => {
     startIndex,
     endIndex,
     totalItems,
-  } = usePagination({ data: regions, itemsPerPage: 15 });
+  } = usePagination({ data: filteredRegions, itemsPerPage: 15 });
 
   const trendData = useMemo(() => {
     const monthlyAverages: Record<string, { month: string; average: number; count: number }> = {};
@@ -334,9 +359,44 @@ const Leaderboard = () => {
               {/* Full Rankings Table */}
               <Card className="glass-strong">
                 <CardHeader>
-                  <CardTitle>Complete Rankings</CardTitle>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <CardTitle>Complete Rankings</CardTitle>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search by name or code..."
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          className="pl-10 w-full sm:w-[250px]"
+                        />
+                      </div>
+                      <Select value={trendFilter} onValueChange={setTrendFilter}>
+                        <SelectTrigger className="w-full sm:w-[150px]">
+                          <Filter className="w-4 h-4 mr-2" />
+                          <SelectValue placeholder="Filter trend" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Trends</SelectItem>
+                          <SelectItem value="improving">Improving</SelectItem>
+                          <SelectItem value="stable">Stable</SelectItem>
+                          <SelectItem value="declining">Declining</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
+                  {filteredRegions.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">No regions found</h3>
+                      <p className="text-muted-foreground">
+                        Try adjusting your search or filter criteria
+                      </p>
+                    </div>
+                  ) : (
+                  <>
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -398,6 +458,8 @@ const Leaderboard = () => {
                     itemsPerPage={itemsPerPage}
                     onItemsPerPageChange={setItemsPerPage}
                   />
+                  </>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
