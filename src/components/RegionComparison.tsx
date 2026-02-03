@@ -2,9 +2,10 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -12,6 +13,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Scale,
+  Plus,
+  X,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  TreeDeciduous,
+  Droplets,
+  Activity,
+  Repeat,
+  Download,
+  Search,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -27,18 +42,7 @@ import {
   Radar,
   Legend,
 } from "recharts";
-import {
-  Scale,
-  Plus,
-  X,
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  TreeDeciduous,
-  Droplets,
-  Activity,
-  Repeat,
-} from "lucide-react";
+import { exportToCSV } from "@/utils/exportData";
 
 const COLORS = ["hsl(var(--primary))", "#22c55e", "#f43f5e", "#a855f7", "#f59e0b"];
 
@@ -57,6 +61,7 @@ interface Region {
 
 export function RegionComparison() {
   const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: regions = [] } = useQuery({
     queryKey: ["comparison-regions"],
@@ -74,9 +79,19 @@ export function RegionComparison() {
     return regions.filter((r) => selectedRegions.includes(r.id));
   }, [regions, selectedRegions]);
 
+  const filteredRegions = useMemo(() => {
+    return regions.filter(
+      (r) =>
+        !selectedRegions.includes(r.id) &&
+        (r.region_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          r.region_code.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [regions, selectedRegions, searchQuery]);
+
   const addRegion = (regionId: string) => {
     if (selectedRegions.length < 5 && !selectedRegions.includes(regionId)) {
       setSelectedRegions([...selectedRegions, regionId]);
+      setSearchQuery("");
     }
   };
 
@@ -123,19 +138,53 @@ export function RegionComparison() {
     }
   };
 
-  const availableRegions = regions.filter(
-    (r) => !selectedRegions.includes(r.id)
-  );
+  const handleExportComparison = () => {
+    if (selectedRegionData.length === 0) return;
+
+    const exportData = selectedRegionData.map((region) => ({
+      region_name: region.region_name,
+      region_code: region.region_code,
+      rci_score: region.rci_score,
+      land_capacity: region.land_capacity || 0,
+      ocean_capacity: region.ocean_capacity || 0,
+      human_capacity: region.human_capacity || 0,
+      circular_capacity: region.circular_capacity || 0,
+      trend: region.rci_trend || "stable",
+    }));
+
+    exportToCSV(
+      exportData,
+      [
+        { key: "region_name", header: "Region Name" },
+        { key: "region_code", header: "Region Code" },
+        { key: "rci_score", header: "RCI Score", format: (v) => v.toFixed(2) },
+        { key: "land_capacity", header: "Land Capacity", format: (v) => v.toFixed(2) },
+        { key: "ocean_capacity", header: "Ocean Capacity", format: (v) => v.toFixed(2) },
+        { key: "human_capacity", header: "Human Capacity", format: (v) => v.toFixed(2) },
+        { key: "circular_capacity", header: "Circular Capacity", format: (v) => v.toFixed(2) },
+        { key: "trend", header: "Trend" },
+      ],
+      "region_comparison"
+    );
+  };
 
   return (
     <div className="space-y-6">
       {/* Region Selection */}
       <Card className="glass-strong">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Scale className="w-5 h-5" />
-            Compare Regions
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Scale className="w-5 h-5" />
+              Compare Regions
+            </CardTitle>
+            {selectedRegions.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleExportComparison}>
+                <Download className="w-4 h-4 mr-2" />
+                Export Comparison
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 mb-4">
@@ -161,14 +210,39 @@ export function RegionComparison() {
           </div>
 
           {selectedRegions.length < 5 && (
-            <div className="flex items-center gap-2">
-              <Select onValueChange={addRegion}>
+            <div className="flex items-center gap-4">
+              <div className="relative flex-1 max-w-[350px]">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search regions by name or code..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+                {searchQuery && filteredRegions.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg max-h-60 overflow-auto">
+                    {filteredRegions.slice(0, 10).map((region) => (
+                      <button
+                        key={region.id}
+                        onClick={() => addRegion(region.id)}
+                        className="w-full px-4 py-2 text-left hover:bg-muted/50 flex items-center justify-between"
+                      >
+                        <span>{region.region_name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {region.rci_score.toFixed(1)}%
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <Select onValueChange={addRegion} value="">
                 <SelectTrigger className="w-[250px]">
                   <Plus className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Add a region to compare" />
+                  <SelectValue placeholder="Or select from list" />
                 </SelectTrigger>
                 <SelectContent>
-                  {availableRegions.map((region) => (
+                  {filteredRegions.map((region) => (
                     <SelectItem key={region.id} value={region.id}>
                       {region.region_name} ({region.rci_score.toFixed(1)}%)
                     </SelectItem>

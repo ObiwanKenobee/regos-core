@@ -10,8 +10,13 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
 import SovereignDashboard from "./pages/SovereignDashboard";
+import InvestorDashboard from "./pages/InvestorDashboard";
+import ScientistDashboard from "./pages/ScientistDashboard";
+import CommunityDashboard from "./pages/CommunityDashboard";
 import Treasury from "./pages/Treasury";
 import Leaderboard from "./pages/Leaderboard";
+import Settings from "./pages/Settings";
+import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,8 +35,13 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/sovereign" element={<SovereignDashboard />} />
+            <Route path="/investor" element={<InvestorDashboard />} />
+            <Route path="/scientist" element={<ScientistDashboard />} />
+            <Route path="/community" element={<CommunityDashboard />} />
             <Route path="/treasury" element={<Treasury />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/docs" element={<Documentation />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
