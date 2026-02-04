@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +32,9 @@ import {
   Building,
   MapPin,
   Check,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -55,6 +58,7 @@ interface NotificationSettings {
 
 const Settings = () => {
   const { user, roles, loading, signOut } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -511,25 +515,45 @@ const Settings = () => {
                     <div>
                       <Label className="mb-3 block">Theme</Label>
                       <div className="grid grid-cols-3 gap-4">
-                        <div className="p-4 rounded-lg border-2 border-primary bg-secondary/30 cursor-pointer">
-                          <div className="w-full h-20 rounded bg-background border border-border mb-2" />
+                        <button
+                          onClick={() => setTheme("dark")}
+                          className={`p-4 rounded-lg border-2 ${
+                            theme === "dark" ? "border-primary" : "border-border"
+                          } bg-secondary/30 cursor-pointer transition-colors hover:border-primary/50`}
+                        >
+                          <div className="w-full h-20 rounded bg-[hsl(220,25%,6%)] border border-border mb-2 flex items-center justify-center">
+                            <Moon className="w-6 h-6 text-muted-foreground" />
+                          </div>
                           <p className="text-sm font-medium text-center">Dark</p>
-                        </div>
-                        <div className="p-4 rounded-lg border border-border bg-secondary/30 cursor-pointer opacity-50">
-                          <div className="w-full h-20 rounded bg-white border border-gray-200 mb-2" />
+                        </button>
+                        <button
+                          onClick={() => setTheme("light")}
+                          className={`p-4 rounded-lg border-2 ${
+                            theme === "light" ? "border-primary" : "border-border"
+                          } bg-secondary/30 cursor-pointer transition-colors hover:border-primary/50`}
+                        >
+                          <div className="w-full h-20 rounded bg-[hsl(45,20%,96%)] border border-gray-200 mb-2 flex items-center justify-center">
+                            <Sun className="w-6 h-6 text-gray-600" />
+                          </div>
                           <p className="text-sm font-medium text-center">Light</p>
-                          <Badge variant="outline" className="w-full justify-center mt-1">
-                            Coming Soon
-                          </Badge>
-                        </div>
-                        <div className="p-4 rounded-lg border border-border bg-secondary/30 cursor-pointer opacity-50">
-                          <div className="w-full h-20 rounded bg-gradient-to-b from-white to-background border border-border mb-2" />
+                        </button>
+                        <button
+                          onClick={() => setTheme("system")}
+                          className={`p-4 rounded-lg border-2 ${
+                            theme === "system" ? "border-primary" : "border-border"
+                          } bg-secondary/30 cursor-pointer transition-colors hover:border-primary/50`}
+                        >
+                          <div className="w-full h-20 rounded bg-gradient-to-b from-[hsl(45,20%,96%)] to-[hsl(220,25%,6%)] border border-border mb-2 flex items-center justify-center">
+                            <Monitor className="w-6 h-6 text-muted-foreground" />
+                          </div>
                           <p className="text-sm font-medium text-center">System</p>
-                          <Badge variant="outline" className="w-full justify-center mt-1">
-                            Coming Soon
-                          </Badge>
-                        </div>
+                        </button>
                       </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {theme === "system" 
+                          ? `Currently using ${resolvedTheme} mode based on your system preference`
+                          : `${theme.charAt(0).toUpperCase() + theme.slice(1)} mode is active`}
+                      </p>
                     </div>
 
                     <Separator />

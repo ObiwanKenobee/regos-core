@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, Mail, Sparkles, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const FloatingNewsletter = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,17 +33,44 @@ const FloatingNewsletter = () => {
 
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setIsSubmitted(true);
-    setIsLoading(false);
-    localStorage.setItem("newsletter_subscribed", "true");
+    try {
+      // Save to database
+      const { error } = await supabase
+        .from("newsletter_subscriptions" as any)
+        .insert({
+          email: email.toLowerCase().trim(),
+          source: "floating_popup",
+        });
 
-    // Close after success
-    setTimeout(() => {
-      setIsOpen(false);
-    }, 3000);
+      if (error) {
+        // Check if it's a duplicate email error
+        if (error.code === "23505") {
+          toast({
+            title: "Already subscribed!",
+            description: "This email is already on our list.",
+          });
+        } else {
+          throw error;
+        }
+      }
+      
+      setIsSubmitted(true);
+      localStorage.setItem("newsletter_subscribed", "true");
+
+      // Close after success
+      setTimeout(() => {
+        setIsOpen(false);
+      }, 3000);
+    } catch (error: any) {
+      console.error("Newsletter subscription error:", error);
+      toast({
+        title: "Subscription failed",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDismiss = () => {
