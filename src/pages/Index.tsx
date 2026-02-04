@@ -11,6 +11,7 @@ import StakeholderSection from "@/components/StakeholderSection";
 import RoadmapSection from "@/components/RoadmapSection";
 import ImpactTokenFlow from "@/components/ImpactTokenFlow";
 import Footer from "@/components/Footer";
+import FloatingNewsletter from "@/components/FloatingNewsletter";
 import { ScrollAnimationWrapper } from "@/components/ScrollAnimationWrapper";
 
 const Index = () => {
@@ -70,6 +71,7 @@ const Index = () => {
         </ScrollAnimationWrapper>
 
         <Footer />
+        <FloatingNewsletter />
       </div>
     </main>
   );
