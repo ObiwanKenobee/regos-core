@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,6 +36,8 @@ import {
   Sun,
   Moon,
   Monitor,
+   BellRing,
+   Smartphone,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
@@ -59,6 +62,14 @@ interface NotificationSettings {
 const Settings = () => {
   const { user, roles, loading, signOut } = useAuth();
   const { theme, setTheme, resolvedTheme } = useTheme();
+   const { 
+     isSupported: pushSupported, 
+     isSubscribed: pushSubscribed, 
+     permission: pushPermission,
+     isLoading: pushLoading,
+     subscribe: subscribePush,
+     unsubscribe: unsubscribePush 
+   } = usePushNotifications();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -484,6 +495,49 @@ const Settings = () => {
                       </div>
                     </div>
 
+                     <div className="pt-4 border-t border-border/50">
+                       <div className="flex items-center gap-2 mb-4">
+                         <Smartphone className="w-4 h-4 text-primary" />
+                         <p className="font-medium">Push Notifications</p>
+                       </div>
+                       
+                       {!pushSupported ? (
+                         <div className="p-4 rounded-lg bg-muted/50 text-center">
+                           <p className="text-sm text-muted-foreground">
+                             Push notifications are not supported in your browser.
+                           </p>
+                         </div>
+                       ) : (
+                         <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/30">
+                           <div>
+                             <p className="font-medium flex items-center gap-2">
+                               <BellRing className="w-4 h-4" />
+                               Browser Push Notifications
+                             </p>
+                             <p className="text-sm text-muted-foreground">
+                               Receive critical alerts even when the app is closed
+                             </p>
+                             {pushPermission === "denied" && (
+                               <p className="text-xs text-destructive mt-1">
+                                 Notifications are blocked. Please enable them in your browser settings.
+                               </p>
+                             )}
+                           </div>
+                           <Switch
+                             checked={pushSubscribed}
+                             onCheckedChange={(checked) => {
+                               if (checked) {
+                                 subscribePush();
+                               } else {
+                                 unsubscribePush();
+                               }
+                             }}
+                             disabled={pushLoading || pushPermission === "denied"}
+                           />
+                         </div>
+                       )}
+                     </div>
+                     
                     <div className="flex justify-end">
                        <Button onClick={handleSaveNotifications} disabled={isSavingNotifications}>
                         <Check className="w-4 h-4 mr-2" />
