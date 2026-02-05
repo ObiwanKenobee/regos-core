@@ -63,6 +63,7 @@ const Settings = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Partial<Profile>>({});
   const [notifications, setNotifications] = useState<NotificationSettings>({
     emailAlerts: true,
@@ -81,9 +82,60 @@ const Settings = () => {
   useEffect(() => {
     if (user) {
       fetchProfile();
+       fetchNotificationPreferences();
     }
   }, [user]);
 
+   const fetchNotificationPreferences = async () => {
+     if (!user) return;
+     try {
+       const { data, error } = await supabase
+         .from("user_preferences")
+         .select("notification_settings")
+         .eq("user_id", user.id)
+         .single();
+ 
+       if (error && error.code !== "PGRST116") throw error;
+ 
+       if (data?.notification_settings) {
+         setNotifications(data.notification_settings as unknown as NotificationSettings);
+       }
+     } catch (error: any) {
+       console.error("Error fetching notification preferences:", error);
+     }
+   };
+ 
+   const handleSaveNotifications = async () => {
+     if (!user) return;
+     setIsSavingNotifications(true);
+     try {
+       const { error } = await supabase
+         .from("user_preferences")
+         .upsert([{
+           user_id: user.id,
+           notification_settings: JSON.parse(JSON.stringify(notifications)),
+           updated_at: new Date().toISOString(),
+         }], {
+           onConflict: "user_id",
+         });
+ 
+       if (error) throw error;
+ 
+       toast({
+         title: "Preferences Saved",
+         description: "Your notification preferences have been updated.",
+       });
+     } catch (error: any) {
+       toast({
+         title: "Error saving preferences",
+         description: error.message,
+         variant: "destructive",
+       });
+     } finally {
+       setIsSavingNotifications(false);
+     }
+   };
+ 
   const fetchProfile = async () => {
     setIsLoadingData(true);
     try {
@@ -433,9 +485,9 @@ const Settings = () => {
                     </div>
 
                     <div className="flex justify-end">
-                      <Button>
+                       <Button onClick={handleSaveNotifications} disabled={isSavingNotifications}>
                         <Check className="w-4 h-4 mr-2" />
-                        Save Preferences
+                         {isSavingNotifications ? "Saving..." : "Save Preferences"}
                       </Button>
                     </div>
                   </CardContent>
