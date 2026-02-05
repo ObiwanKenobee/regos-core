@@ -132,25 +132,34 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          is_verified: boolean | null
           metadata: Json | null
           source: string | null
           subscribed_at: string
+          verification_token: string | null
+          verified_at: string | null
         }
         Insert: {
           email: string
           id?: string
           is_active?: boolean
+          is_verified?: boolean | null
           metadata?: Json | null
           source?: string | null
           subscribed_at?: string
+          verification_token?: string | null
+          verified_at?: string | null
         }
         Update: {
           email?: string
           id?: string
           is_active?: boolean
+          is_verified?: boolean | null
           metadata?: Json | null
           source?: string | null
           subscribed_at?: string
+          verification_token?: string | null
+          verified_at?: string | null
         }
         Relationships: []
       }
@@ -230,6 +239,33 @@ export type Database = {
           id?: string
           organization?: string | null
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          keys: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          keys: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          keys?: Json
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []

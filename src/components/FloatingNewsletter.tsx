@@ -36,7 +36,7 @@ const FloatingNewsletter = () => {
     try {
       // Save to database
       const { error } = await supabase
-        .from("newsletter_subscriptions" as any)
+        .from("newsletter_subscriptions")
         .insert({
           email: email.toLowerCase().trim(),
           source: "floating_popup",
@@ -51,6 +51,18 @@ const FloatingNewsletter = () => {
           });
         } else {
           throw error;
+        }
+      } else {
+        // Send confirmation email
+        try {
+          await supabase.functions.invoke("newsletter-confirm", {
+            body: {
+              email: email.toLowerCase().trim(),
+              action: "send",
+            },
+          });
+        } catch (emailError) {
+          console.error("Failed to send confirmation email:", emailError);
         }
       }
       
