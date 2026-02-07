@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Globe, Home, Shield, Crown, LogOut, User, Wifi, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NotificationCenter from "@/components/NotificationCenter";
+import RoleSwitcher from "@/components/sovereign/RoleSwitcher";
 
 interface DashboardHeaderProps {
   userEmail: string;
@@ -16,7 +17,7 @@ export const DashboardHeader = ({
   isRealtimeActive,
   onSignOut,
 }: DashboardHeaderProps) => {
-  const primaryRole = roles[0] || "User";
+  
 
   return (
     <header className="sticky top-0 z-50 glass-strong border-b border-border/50">
@@ -33,12 +34,9 @@ export const DashboardHeader = ({
               </span>
             </a>
             
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-              <span className="text-sm font-medium text-primary capitalize">
-                {primaryRole}
-              </span>
-              <span className="text-xs text-muted-foreground">Dashboard</span>
-            </div>
+            {roles.length > 0 && (
+              <RoleSwitcher roles={roles} />
+            )}
 
             <AnimatePresence>
               {isRealtimeActive && (
