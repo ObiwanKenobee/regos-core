@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      bond_transactions: {
+        Row: {
+          amount: number
+          bond_id: string
+          counterparty: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          transaction_date: string
+          transaction_type: string
+        }
+        Insert: {
+          amount: number
+          bond_id: string
+          counterparty?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          transaction_date?: string
+          transaction_type: string
+        }
+        Update: {
+          amount?: number
+          bond_id?: string
+          counterparty?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          transaction_date?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bond_transactions_bond_id_fkey"
+            columns: ["bond_id"]
+            isOneToOne: false
+            referencedRelation: "sovereign_bonds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_sources: {
         Row: {
           api_key_name: string | null
@@ -381,6 +422,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sovereign_analytics_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "rci_regions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sovereign_bonds: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          bond_name: string
+          bond_type: string
+          coupon_rate: number
+          created_at: string
+          created_by: string
+          id: string
+          issue_date: string
+          maturity_date: string
+          metadata: Json | null
+          principal_amount: number
+          rci_linked: boolean
+          rci_threshold: number | null
+          region_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bond_name: string
+          bond_type?: string
+          coupon_rate?: number
+          created_at?: string
+          created_by: string
+          id?: string
+          issue_date?: string
+          maturity_date: string
+          metadata?: Json | null
+          principal_amount: number
+          rci_linked?: boolean
+          rci_threshold?: number | null
+          region_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bond_name?: string
+          bond_type?: string
+          coupon_rate?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          issue_date?: string
+          maturity_date?: string
+          metadata?: Json | null
+          principal_amount?: number
+          rci_linked?: boolean
+          rci_threshold?: number | null
+          region_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sovereign_bonds_region_id_fkey"
             columns: ["region_id"]
             isOneToOne: false
             referencedRelation: "rci_regions"
