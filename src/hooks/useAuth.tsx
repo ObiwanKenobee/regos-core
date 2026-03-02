@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [rolesLoaded, setRolesLoaded] = useState(false);
 
   const fetchRoles = async (userId: string) => {
     const { data, error } = await supabase
@@ -32,36 +33,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!error && data) {
       setRoles(data.map((r) => r.role as AppRole));
     }
+    setRolesLoaded(true);
   };
 
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    let mounted = true;
 
-        if (session?.user) {
-          // Use setTimeout to avoid potential deadlocks
-          setTimeout(() => fetchRoles(session.user.id), 0);
-        } else {
-          setRoles([]);
-        }
-        setLoading(false);
-      }
-    );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check for existing session first
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        fetchRoles(session.user.id);
+        await fetchRoles(session.user.id);
+      } else {
+        setRolesLoaded(true);
       }
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Set up auth state listener for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (!mounted) return;
+        setSession(session);
+        setUser(session?.user ?? null);
+
+        if (session?.user) {
+          // Fetch roles without blocking the callback
+          fetchRoles(session.user.id);
+        } else {
+          setRoles([]);
+          setRolesLoaded(true);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -119,7 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         session,
         user,
         roles,
-        loading,
+        loading: loading || !rolesLoaded,
         signIn,
         signUp,
         signOut,
