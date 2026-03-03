@@ -19,7 +19,11 @@ import Leaderboard from "./pages/Leaderboard";
 import Settings from "./pages/Settings";
 import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
- import VerifyEmail from "./pages/VerifyEmail";
+import VerifyEmail from "./pages/VerifyEmail";
+import Marketplace from "./pages/Marketplace";
+import RCIEngine from "./pages/RCIEngine";
+import BondLifecycle from "./pages/BondLifecycle";
+import VerificationCenter from "./pages/VerificationCenter";
 
 const queryClient = new QueryClient();
 
@@ -45,8 +49,11 @@ const App = () => (
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/docs" element={<Documentation />} />
-               <Route path="/verify-email" element={<VerifyEmail />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/marketplace" element={<Marketplace />} />
+              <Route path="/rci-engine" element={<RCIEngine />} />
+              <Route path="/bond-lifecycle" element={<BondLifecycle />} />
+              <Route path="/verification" element={<VerificationCenter />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
