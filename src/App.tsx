@@ -28,6 +28,7 @@ import BondLifecycle from "./pages/BondLifecycle";
 import VerificationCenter from "./pages/VerificationCenter";
 import OrgSettings from "./pages/OrgSettings";
 import Onboarding from "./pages/Onboarding";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
