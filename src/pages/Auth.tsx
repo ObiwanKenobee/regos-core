@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { Globe, Shield, Users, FlaskConical, Landmark, ArrowLeft } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 type AppRole = "sovereign" | "investor" | "scientist" | "community";
@@ -67,7 +68,13 @@ const Auth = () => {
             title: "Welcome back",
             description: "Successfully authenticated to Atlas Sanctum",
           });
-          navigate("/dashboard");
+          // Check if onboarding is complete
+          const { data: onboarding } = await supabase
+            .from("onboarding_progress")
+            .select("completed_at")
+            .eq("user_id", (await supabase.auth.getUser()).data.user?.id || "")
+            .maybeSingle();
+          navigate(onboarding?.completed_at ? "/dashboard" : "/onboarding");
         }
       } else {
         const { error } = await signUp(email, password, fullName, selectedRole);
@@ -80,9 +87,9 @@ const Auth = () => {
         } else {
           toast({
             title: "Registration successful",
-            description: "Welcome to Atlas Sanctum. Redirecting to your dashboard...",
+            description: "Please check your email to verify your account, then sign in.",
           });
-          navigate("/dashboard");
+          // Don't navigate — user needs to verify email first
         }
       }
     } finally {
