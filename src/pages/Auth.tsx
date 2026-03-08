@@ -45,6 +45,8 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [selectedRole, setSelectedRole] = useState<AppRole>("community");
   const [loading, setLoading] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
