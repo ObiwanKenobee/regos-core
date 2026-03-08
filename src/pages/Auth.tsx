@@ -45,10 +45,29 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [selectedRole, setSelectedRole] = useState<AppRole>("community");
   const [loading, setLoading] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({ title: "Reset link sent", description: "Check your email for a password reset link." });
+    } catch (err: any) {
+      toast({ title: "Failed to send reset link", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +87,6 @@ const Auth = () => {
             title: "Welcome back",
             description: "Successfully authenticated to Atlas Sanctum",
           });
-          // Check if onboarding is complete
           const { data: onboarding } = await supabase
             .from("onboarding_progress")
             .select("completed_at")
@@ -89,7 +107,6 @@ const Auth = () => {
             title: "Registration successful",
             description: "Please check your email to verify your account, then sign in.",
           });
-          // Don't navigate — user needs to verify email first
         }
       }
     } finally {
@@ -201,6 +218,45 @@ const Auth = () => {
             </div>
           </div>
 
+          {forgotPassword ? (
+            <>
+              <h2 className="font-display text-2xl font-bold mb-2">Reset Password</h2>
+              <p className="text-muted-foreground mb-8">
+                {resetSent
+                  ? "Check your email for a reset link."
+                  : "Enter your email and we'll send you a reset link."}
+              </p>
+              {!resetSent ? (
+                <form onSubmit={handleForgotPassword} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="resetEmail">Email</Label>
+                    <Input
+                      id="resetEmail"
+                      type="email"
+                      placeholder="you@organization.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="bg-card border-border"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Sending…" : "Send Reset Link"}
+                  </Button>
+                </form>
+              ) : null}
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => { setForgotPassword(false); setResetSent(false); }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            </>
+          ) : (
+          <>
           <h2 className="font-display text-2xl font-bold mb-2">
             {isLogin ? "Welcome back" : "Join Atlas Sanctum"}
           </h2>
@@ -253,6 +309,18 @@ const Auth = () => {
               />
             </div>
 
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => setForgotPassword(true)}
+                  className="text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
             {!isLogin && (
               <div className="space-y-3">
                 <Label>Select Your Role</Label>
@@ -297,6 +365,8 @@ const Auth = () => {
                 : "Already have an account? Sign in"}
             </button>
           </div>
+          </>
+          )}
         </motion.div>
       </div>
     </div>

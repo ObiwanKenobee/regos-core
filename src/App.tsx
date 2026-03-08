@@ -28,6 +28,7 @@ import BondLifecycle from "./pages/BondLifecycle";
 import VerificationCenter from "./pages/VerificationCenter";
 import OrgSettings from "./pages/OrgSettings";
 import Onboarding from "./pages/Onboarding";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
                   <Route path="/verification" element={<VerificationCenter />} />
                   <Route path="/org" element={<OrgSettings />} />
                   <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
