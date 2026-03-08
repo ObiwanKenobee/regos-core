@@ -270,6 +270,18 @@ const Auth = () => {
               />
             </div>
 
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => setForgotPassword(true)}
+                  className="text-xs text-primary hover:text-primary/80 transition-colors"
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+
             {!isLogin && (
               <div className="space-y-3">
                 <Label>Select Your Role</Label>
