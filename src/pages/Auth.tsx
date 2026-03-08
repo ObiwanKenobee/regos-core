@@ -67,7 +67,13 @@ const Auth = () => {
             title: "Welcome back",
             description: "Successfully authenticated to Atlas Sanctum",
           });
-          navigate("/dashboard");
+          // Check if onboarding is complete
+          const { data: onboarding } = await supabase
+            .from("onboarding_progress")
+            .select("completed_at")
+            .eq("user_id", (await supabase.auth.getUser()).data.user?.id || "")
+            .maybeSingle();
+          navigate(onboarding?.completed_at ? "/dashboard" : "/onboarding");
         }
       } else {
         const { error } = await signUp(email, password, fullName, selectedRole);
