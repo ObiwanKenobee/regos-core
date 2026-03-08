@@ -218,6 +218,45 @@ const Auth = () => {
             </div>
           </div>
 
+          {forgotPassword ? (
+            <>
+              <h2 className="font-display text-2xl font-bold mb-2">Reset Password</h2>
+              <p className="text-muted-foreground mb-8">
+                {resetSent
+                  ? "Check your email for a reset link."
+                  : "Enter your email and we'll send you a reset link."}
+              </p>
+              {!resetSent ? (
+                <form onSubmit={handleForgotPassword} className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="resetEmail">Email</Label>
+                    <Input
+                      id="resetEmail"
+                      type="email"
+                      placeholder="you@organization.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="bg-card border-border"
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? "Sending…" : "Send Reset Link"}
+                  </Button>
+                </form>
+              ) : null}
+              <div className="mt-6 text-center">
+                <button
+                  type="button"
+                  onClick={() => { setForgotPassword(false); setResetSent(false); }}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            </>
+          ) : (
+          <>
           <h2 className="font-display text-2xl font-bold mb-2">
             {isLogin ? "Welcome back" : "Join Atlas Sanctum"}
           </h2>
