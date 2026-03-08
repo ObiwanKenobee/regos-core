@@ -52,6 +52,23 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+      setResetSent(true);
+      toast({ title: "Reset link sent", description: "Check your email for a password reset link." });
+    } catch (err: any) {
+      toast({ title: "Failed to send reset link", description: err.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -70,7 +87,6 @@ const Auth = () => {
             title: "Welcome back",
             description: "Successfully authenticated to Atlas Sanctum",
           });
-          // Check if onboarding is complete
           const { data: onboarding } = await supabase
             .from("onboarding_progress")
             .select("completed_at")
@@ -91,7 +107,6 @@ const Auth = () => {
             title: "Registration successful",
             description: "Please check your email to verify your account, then sign in.",
           });
-          // Don't navigate — user needs to verify email first
         }
       }
     } finally {
