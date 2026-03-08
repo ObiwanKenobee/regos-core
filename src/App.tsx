@@ -63,6 +63,7 @@ const App = () => (
                   <Route path="/verification" element={<VerificationCenter />} />
                   <Route path="/org" element={<OrgSettings />} />
                   <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
