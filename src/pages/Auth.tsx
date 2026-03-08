@@ -365,6 +365,8 @@ const Auth = () => {
                 : "Already have an account? Sign in"}
             </button>
           </div>
+          </>
+          )}
         </motion.div>
       </div>
     </div>
